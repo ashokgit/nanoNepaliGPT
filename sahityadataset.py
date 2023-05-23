@@ -74,19 +74,31 @@ def write_to_csv(data, filename):
         writer = csv.writer(file)
         writer.writerow(data)
 
+import os
+
 def main():
     sitemap_index_url = 'https://sahityapost.com/sitemap_index.xml'
     sitemap_urls = get_links_from_sitemap(sitemap_index_url)
-    # data = []
+
+    # Check if the data.csv file exists
+    if os.path.exists('data.csv'):
+        # Read existing URLs from data.csv
+        with open('data.csv', 'r') as file:
+            reader = csv.reader(file)
+            existing_urls = {row[0] for row in reader}
+    else:
+        existing_urls = set()
+
     for sitemap_url in sitemap_urls:
         page_urls = get_links_from_sitemap(sitemap_url)
         for page_url in page_urls:
+            # Skip the page if it already exists in the URL
+            if page_url in existing_urls:
+                continue
+
             if 'videos' in page_url:
                 continue
             page_info = get_page_info(page_url)
             if page_info is not None:
                 print(page_info)
                 write_to_csv(page_info, 'data.csv')
-
-if __name__ == "__main__":
-    main()
